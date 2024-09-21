@@ -1,0 +1,15 @@
+
+
+
+post http://localhost:7777/seller/saveseller
+Content-Type:application/json
+
+{
+    "firstname" : "Ajay",
+    "lastname"  : "devarasetty",
+    "mobile"    : 6309734164,
+    "email"     : "devarasettyajay7@gmail.com",
+    "gender"    : "male",
+    "dob"       : "04/16/2002",
+    "password"  : "@Ajay123"
+}
