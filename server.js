@@ -36,6 +36,18 @@ const db = mongoose.connection;
 db.on("error", (error) => console.error("Database Error", error));
 
 
+// const uri = 'mongodb://localhost:27017/Amazon';
+
+// mongoose.connect(uri)
+//     .then(() => console.log("Mongodb Database is Connected"))
+//     .catch(error => console.error("Error in Database Connection", error));
+
+// const db = mongoose.connection;
+
+// // Optionally, you can listen for errors
+// db.on("error", (error) => console.error("Database Error", error));
+
+
 
 
 app.use('/productimages', express.static(path.join(__dirname, 'productimages')));

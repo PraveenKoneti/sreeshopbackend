@@ -158,9 +158,32 @@ router.get("/getallproducts", async(req, res)=>{
                //   TO GET THE PARTICULAR PRODUCT DATA 
 
 router.get("/getoneproduct", async(req, res)=>{
-    let producturl =  req.query.producturl;
-    let product = await Product.find( {producturl : producturl} );
-    res.status(200).json(product);                           //   http://localhost:7777/product/getoneproduct
+    try {
+        const producturl = req.query.producturl;
+        const userId = req.query.userid;
+    
+        // Fetch the product based on producturl
+        let product = await Product.findOne({ producturl: producturl });
+    
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+    
+        // Check if the product exists in the user's wishlist
+        const wishlistItem = await Wishlist.findOne({ userid: userId, productid: product.id });
+        console.log("Wishlist Item:", wishlistItem); // This should log the wishlist item
+    
+        product = product.toObject(); // Convert to plain object if needed
+        product.wishlistId = wishlistItem ? wishlistItem._id : ""; // Add wishlistId or empty string
+        // If the wishlistItem exists, add the wishlistId to the product
+        product.wishlistId = wishlistItem ? wishlistItem._id : ""; // Add wishlistId or empty string
+        console.log("Product with wishlistId:", product); // This should log the product with the wishlistId
+        res.status(200).json(product);
+    } catch (error) {
+        console.error("Error occurred:", error); // Log any errors that occur
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+              
 })
 
 
