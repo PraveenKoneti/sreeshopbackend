@@ -4,6 +4,7 @@ const app = express();
 const cors = require("cors")
 app.use(express.json())
 const path = require('path'); 
+const mongoose = require("mongoose");
 
 app.use(cors());
 
@@ -18,15 +19,21 @@ app.use(cors());
 
             //    To import the mongoose
 
-const mongoose = require("mongoose");
-mongoose.connect("mongodb://127.0.0.1:27017/Amazon");
+    // Ensure the username and password are URL-encoded if they contain special characters
+const username = encodeURIComponent("konetipraveen");
+const password = encodeURIComponent("@Praveen123");
+const dbName = "ShreeShop";
+
+const uri = `mongodb+srv://${username}:${password}@cluster0.nnowk.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
+
+mongoose.connect(uri)
+    .then(() => console.log("Mongodb Database is Connected"))
+    .catch(error => console.error("Error in Database Connection", error));
+
 const db = mongoose.connection;
 
-
-            //    To Check the Mongodb Connection 
-
-db.on("error", (error)=>console.log("Error in Database Connection"));
-db.on("open", ()=>console.log("Mongodb Database is Connected"));
+// Optionally, you can listen for errors
+db.on("error", (error) => console.error("Database Error", error));
 
 
 
