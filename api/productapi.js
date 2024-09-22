@@ -169,20 +169,24 @@ router.get("/getoneproduct", async(req, res)=>{
             return res.status(404).json({ message: "Product not found" });
         }
     
-        // Check if the product exists in the user's wishlist
-        const wishlistItem = await Wishlist.findOne({ userid: userId, productid: product.id });
-        console.log("Wishlist Item:", wishlistItem); // This should log the wishlist item
+        // Check if the product exists in the user's wishlist only if userId is valid
+        let wishlistItem = null;
+        if (userId && userId !== "null") {
+            wishlistItem = await Wishlist.findOne({ userid: userId, productid: product.id });
+        }
     
         product = product.toObject(); // Convert to plain object if needed
-        product.wishlistId = wishlistItem ? wishlistItem._id : ""; // Add wishlistId or empty string
-        // If the wishlistItem exists, add the wishlistId to the product
-        product.wishlistId = wishlistItem ? wishlistItem._id : ""; // Add wishlistId or empty string
-        console.log("Product with wishlistId:", product); // This should log the product with the wishlistId
+        // Set wishlistId to wishlist item's ID or "" if not found or if userId is not valid
+        product.wishlistId = (wishlistItem) ? wishlistItem._id : "";
+    
+        
         res.status(200).json(product);
     } catch (error) {
         console.error("Error occurred:", error); // Log any errors that occur
         res.status(500).json({ message: "Internal Server Error" });
     }
+    
+    
               
 })
 
