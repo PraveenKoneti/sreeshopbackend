@@ -8,6 +8,8 @@ const mongoose = require("mongoose");
 
 app.use(cors());
 
+
+
                             // Improved CORS setup
 // app.use(cors({
 //     origin: '*',
@@ -19,14 +21,14 @@ app.use(cors());
 
             //    To import the mongoose
 
-    // Ensure the username and password are URL-encoded if they contain special characters
+//Ensure the username and password are URL-encoded if they contain special characters
 const username = encodeURIComponent("konetipraveen");
 const password = encodeURIComponent("@Praveen123");
 const dbName = "ShreeShop";
 
-const uri = `mongodb+srv://${username}:${password}@cluster0.nnowk.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
-
-mongoose.connect(uri)
+const url = `mongodb+srv://${username}:${password}@cluster0.nnowk.mongodb.net/${dbName}?retryWrites=true&w=majority&appName=Cluster0`;
+console.log("SERVER URL = ",url);
+mongoose.connect(url)
     .then(() => console.log("Mongodb Database is Connected"))
     .catch(error => console.error("Error in Database Connection", error));
 
@@ -36,9 +38,9 @@ const db = mongoose.connection;
 db.on("error", (error) => console.error("Database Error", error));
 
 
-// const uri = 'mongodb://localhost:27017/Amazon';
+// const url = 'mongodb://localhost:27017/Amazon';
 
-// mongoose.connect(uri)
+// mongoose.connect(url)
 //     .then(() => console.log("Mongodb Database is Connected"))
 //     .catch(error => console.error("Error in Database Connection", error));
 
@@ -46,7 +48,6 @@ db.on("error", (error) => console.error("Database Error", error));
 
 // // Optionally, you can listen for errors
 // db.on("error", (error) => console.error("Database Error", error));
-
 
 
 
@@ -84,14 +85,11 @@ app.use("/wishlist", Wishlist);               //  http://localhost:7777/wishlist
 const Cartlist = require("./api/cartapi")
 app.use("/cartlist", Cartlist);               //  http://localhost:7777/cartlist
 
-const Emailpdf = require("./api/emailpdfapi")
-app.use("/emailpdf", Emailpdf);               //  http://localhost:7777/emailpdf 
-
 const Orderlist = require("./api/orderapi");
 app.use("/orderlist", Orderlist) ;            //  http://localhost:7777/orderlist 
 
 
 
 app.listen(7777, function(){
-    console.log("The Server is Live Now !....");
+    console.log("The Server is Live Now on Port 7777 with WebSocket!");
 })

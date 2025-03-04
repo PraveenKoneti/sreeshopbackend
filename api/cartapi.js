@@ -3,8 +3,13 @@ const express=require("express");
 const router=express.Router();
 module.exports = router;
 
+
+                    // TO REQUIRE THE JSON WEBTOKEN VERIFICATION
+
+const verifyToken = require('../services/authenticationServices').verifyToken; 
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+
 
 
                         //   REQUIRE TO CART SCHEMA
@@ -12,24 +17,22 @@ const config = require('../config');
 const Cartlist = require("../models/cartschema");
 
 
-
                         //    TO RETRIVE THE CARTLIST DATA 
 
 router.get("/getcartlist", async(req, res)=>{
     
-    const token = (req.headers['authorization'] || '').split(' ')[1];
-
-    jwt.verify(token, config.secretKey, async (err, decoded) => {
-        if (err) {
-            // Handle verification error
-            return res.status(200).json({ message: "Authentication Failed/Session Expired!", status: false });
-        }
+    try{
+        await verifyToken((req.headers['authorization'] || '').split(' ')[1])
 
         const cartlistdata = await Cartlist.find({ userid: req.query.id});
 
-        // Send the response with cart list data
         return res.status(200).json({ items: cartlistdata, status: true });
-    });
+    }
+    catch (err) {
+        // టోకెన్ verify విఫలమైతే error message పంపడం
+        return res.status(200).json({ message: "Authentication Failed / Session Expired!", status: false });
+    }
+
 });
 
 
@@ -64,6 +67,8 @@ router.post("/savecartlist", async(req, res)=>{
 });
 
 
+//------------------------------------------------------------------------------------------------------------------
+
 
                     //   TO UPDATE  THE PARTICULAR PRODUCT DATA IN CARTLIST
 
@@ -76,6 +81,8 @@ router.put("/updatecartlist/:id", async(req, res)=>{
             res.status(200).json( {"message" : "Quantity Updated Sucessfully"} )
 });
 
+
+//----------------------------------------------------------------------------------------------------------------
 
 
                 //   TO DELETE THE PARTICULAR PRODUCT DATA FROM CARTLIST 

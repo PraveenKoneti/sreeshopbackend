@@ -182,7 +182,6 @@ router.get("/getoneproduct", async(req, res)=>{
         
         res.status(200).json(product);
     } catch (error) {
-        console.error("Error occurred:", error); // Log any errors that occur
         res.status(500).json({ message: "Internal Server Error" });
     }
     
@@ -306,7 +305,7 @@ router.put('/updateproduct/:id', upload.single('productimage'), async (req, res)
 router.get("/instockcount", async(req, res)=>{
     let id = req.query.id;                                         // http://localhost:7777/product/instockcount
     let productcount = await Product.find({sellerid:id});
-    let instockcount = await Product.find({sellerid:id,productactive:"In Stock"})   
+    let instockcount = await Product.find({sellerid:id,productactive:"InStock"})   
     res.status(200).json({productcount:productcount.length, instockcount:instockcount.length})
 })
 
@@ -320,7 +319,7 @@ router.get("/instockcount", async(req, res)=>{
 router.get("/outofstockcount", async(req, res)=>{
     let id = req.query.id;                                        // http://localhost:7777/product/outofstockcount
     let productcount = await Product.find({sellerid:id});
-    let outofstockcount = await Product.find({sellerid:id,productactive:"Out Of Stock"})  
+    let outofstockcount = await Product.find({sellerid:id,productactive:"OutOfStock"})  
     res.status(200).json({productcount:productcount.length, outofstockcount:outofstockcount.length})
 })
 
@@ -348,21 +347,43 @@ router.get("/search", async(req, res)=>{
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-                        //  TO GET THE PARTICULARBRANDPRODUCT FROM THE ALL PRODUCTS
+//  TO GET THE PARTICULARBRANDPRODUCT FROM THE ALL PRODUCTS
 
-router.get("/getparticularbrandproduct", async(req, res)=>{
-    let brand = req.query.brand;
-    let category = req.query.category;            //   http://localhost:7777/product/getparticularbrandproduct
-    let page = req.query.page;
-    let limit = req.query.limit;
-    let skip = (page - 1) * limit;
+router.get("/getparticularbrandproduct", async (req, res) => {
+    try {
+        let brand = req.query.brand;
+        let category = req.query.category;
+        let skip = parseInt(req.query.skip) || 0;
+        let limit = parseInt(req.query.limit) || 10;     //  http://localhost:7777/product/getparticularbrandproduct
 
-    let total = await Product.count({ brandname: brand, categoryname: category });
-    let allProducts = await Product.find({ brandname: brand, categoryname: category }).skip(skip).limit(limit);;
+        // Create the query object
+        let query = {};
+        
+        // Add category to query if it's provided
+        if (category) {
+            query.categoryname = category;
+        }
+        
+        // Add brand to query only if it's not an empty string
+        if (brand) {
+            query.brandname = brand;
+        }
 
-    res.status(200).json({products: paginatedProducts, total: total, pages: Math.ceil(total / limit) });
-})
+        // Get total count of products matching the query
+        let total = await Product.countDocuments(query);
 
+        // Fetch products based on the query, skipping and limiting for pagination
+        let allProducts = await Product.find(query).skip(skip).limit(limit);
+
+        // Send response with products and total count
+        res.status(200).json({ products: allProducts, total: total });
+    } catch (error) {
+        // Handle any errors that occur during the process
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Server Error", error });
+    }
+});
+                        
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -414,8 +435,6 @@ router.get("/getorderedcancelledproductsdata", async(req, res)=>{
         date: { $gte: startDate.toISOString(), $lte: endDate.toISOString() },
         "products.sellerid": sellerid
     }).exec();
-
-    console.log(orders);
 
     // Initialize monthly counts
     const monthlyCounts = {};
@@ -522,6 +541,46 @@ router.get('/getcancelledproducts', async(req, res)=>{
 
 
 //------------------------------------------------------------------------------------------------------------------
+
+
+router.put('/bulkproductstatusupdate', async(req, res)=>{
+
+    let ids = req.body.id;
+    let productstatus = req.body.status;
+
+    await Product.updateMany(
+        { _id: { $in: ids } }, // Filter by array of product IDs
+        { $set: { productactive: productstatus } }  // Update the status field
+    );
+
+    res.status(200).json({'message':'Successfully'});
+
+})
+
+
+//-----------------------------------------------------------------------------------------------------------------
+
+router.delete('/bulkproductsdelete/:id', async(req, res)=>{
+
+    let ids = req.params.id;
+
+
+    if (!ids || ids.length === 0) {
+        return res.status(400).json({ message: "No product IDs provided." });
+    }
+
+    // Perform the deletion of products with the provided IDs
+    const result = await Product.deleteMany({ _id: { $in: ids } });
+
+    if (result.deletedCount === 0) {
+        return res.status(404).json({ message: "No products found for deletion." });
+    }
+
+    return res.status(200).json({
+        message: `${result.deletedCount} products deleted successfully.`,
+    });
+
+})
 
 
 
